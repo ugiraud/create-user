@@ -1,0 +1,52 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+  - name: Get primary group info
+    getent:
+      database: group
+      key: testusergroup
+  - name: Check group
+    assert:
+      that:
+        - getent_group.testusergroup[1] == "1500" # group id
+
+  - name: Get user info
+    getent:
+      database: passwd
+      key: testuser
+  - name: Check user
+    assert:
+      that:
+        - getent_passwd.testuser[0] == "x" # User password is set
+        - getent_passwd.testuser[1] == "1500" # User id
+        - getent_passwd.testuser[2] == "1500" # Group id
+        - getent_passwd.testuser[3] == "This user exists for testing purposes" # User comment
+        - getent_passwd.testuser[4] == "/users/testuser" # User home directory
+        - getent_passwd.testuser[5] == "/bin/ksh" # User shell
+
+  - name: Get user directory info
+    stat:
+      path: "/users/testuser"
+    register: home_dir
+  - name: Check home directory
+    assert:
+      that:
+        - home_dir.stat.exists
+        - home_dir.stat.gid == 1500
+        - home_dir.stat.uid == 1500
+        - home_dir.stat.mode == "0700"
+
+  - name: Get user data directory info
+    stat:
+      path: "/data"
+    register: data_dir
+
+  - name: Check data directory
+    assert:
+      that:
+        - data_dir.stat.exists
+        - data_dir.stat.gid == 1500
+        - data_dir.stat.uid == 1500
+        - data_dir.stat.mode == "0750"
