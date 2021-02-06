@@ -2,6 +2,8 @@
 - name: Converge
   hosts: all
   tasks:
-    - name: "Include create-user"
+    - name: "Include create_user"
       include_role:
-        name: "create-user"
+        name: "create_user"
+      vars:
+        user_name: testuser

@@ -1,2 +1,30 @@
 ---
-# tasks file for create-user
+- name: Assert mandatory variables are set
+  assert:
+    that:
+      - user_name is defined
+
+- name: Ensure main group exists
+  group:
+    name: "{{ main_group.name }}"
+    gid: "{{ main_group.gid }}"
+    state: present
+
+- name: Ensure user exists
+  user:
+    name: "{{ user_name }}"
+    comment: "{{ user_comment }}"
+    shell: "{{ user_shell }}"
+    uid: "{{ user_id }}"
+    home: "{{ home_directory }}/{{ user_name }}"
+    password: "{{ user_password | password_hash('sha512', 'salty') }}"
+    group: "{{ main_group.name }}"
+
+- name: Create user data directory
+  file:
+    state: directory
+    mode: 0750
+    path: "{{ user_data_directory }}"
+    owner: "{{ user_name }}"
+    group: "{{ main_group.name }}"
+  when: user_data_directory is defined

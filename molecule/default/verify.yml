@@ -1,10 +1,40 @@
 ---
-# This is an example playbook to execute Ansible tests.
-
 - name: Verify
   hosts: all
   gather_facts: false
   tasks:
-  - name: Example assertion
+  - name: Get primary group info
+    getent:
+      database: group
+      key: users
+  - name: Check group
     assert:
-      that: true
+      that:
+        - getent_group.users[1] == "1000" # group id
+
+  - name: Get user info
+    getent:
+      database: passwd
+      key: testuser
+  - name: Check user
+    assert:
+      that:
+        - getent_passwd.testuser[0] == "x" # User password is set
+        - getent_passwd.testuser[1] == "1000" # User id
+        - getent_passwd.testuser[2] == "1000" # Group id
+        - getent_passwd.testuser[3] == "Ansible managed user" # User comment
+        - getent_passwd.testuser[4] == "/home/testuser" # User home directory
+        - getent_passwd.testuser[5] == "/bin/bash" # User shell
+
+  - name: Get user directory info
+    stat:
+      path: "/home/testuser"
+    register: home_dir
+  - name: Check home directory
+    assert:
+      that:
+        - home_dir.stat.exists
+        - home_dir.stat.gid == 1000
+        - home_dir.stat.uid == 1000
+        - home_dir.stat.mode == "0700"
+

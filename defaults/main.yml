@@ -1,2 +1,9 @@
 ---
-# defaults file for create-user
+home_directory: /home
+user_password: "{{ lookup('password', '{{ user_name }} length=16') | password_hash('sha512', 'salty') }}"
+user_comment: "Ansible managed user"
+user_shell: /bin/bash
+user_id: 1000
+main_group:
+  name: users
+  gid: 1000
