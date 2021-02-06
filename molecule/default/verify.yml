@@ -37,4 +37,3 @@
         - home_dir.stat.gid == 1000
         - home_dir.stat.uid == 1000
         - home_dir.stat.mode == "0700"
-
